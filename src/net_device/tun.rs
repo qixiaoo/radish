@@ -5,8 +5,8 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::os::unix::io::RawFd;
 
 use libc::{
-    close, in_addr, ioctl, open, read, sockaddr_in, socket, write, AF_INET, IFF_NO_PI, IFF_TUN, O_RDWR, SIOCSIFADDR,
-    SIOCSIFNETMASK, SOCK_DGRAM,
+    c_short, close, in_addr, ioctl, open, read, sockaddr_in, socket, write, AF_INET, IFF_NO_PI, IFF_TUN, O_RDWR,
+    SIOCSIFADDR, SIOCSIFFLAGS, SIOCSIFNETMASK, SOCK_DGRAM,
 };
 use log::error;
 
@@ -57,6 +57,20 @@ impl TunDevice {
                 .into_owned(),
             socket_fd,
         })
+    }
+
+    /// Set the active flag word of current tun device
+    pub fn flags(&self, flags: c_short) -> Result<&Self> {
+        let mut request = InterfaceRequest::new(&self.name)?;
+        request.union.flags = flags;
+
+        let result = unsafe { ioctl(self.socket_fd, SIOCSIFFLAGS, &request) };
+        if result < 0 {
+            error!("Failed to set flags: {}.", flags);
+            return Err(std::io::Error::last_os_error().into());
+        }
+
+        Ok(self)
     }
 
     /// Persist current tun device
