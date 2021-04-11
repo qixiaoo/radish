@@ -3,7 +3,8 @@ use std::mem::zeroed;
 
 use libc::{c_int, c_short, c_uchar, c_ulong, c_ushort, sockaddr, IFNAMSIZ};
 
-use crate::net_device::error::{Error, Result};
+use crate::error::Result;
+use crate::net_device::error::Error;
 
 /// Data structure defined in <net/if.h>
 

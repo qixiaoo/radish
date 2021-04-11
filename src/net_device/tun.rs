@@ -10,7 +10,7 @@ use libc::{
 };
 use log::error;
 
-use crate::net_device::error::Result;
+use crate::error::Result;
 use crate::net_device::r#if::{consts, InterfaceRequest};
 
 #[derive(Debug)]
