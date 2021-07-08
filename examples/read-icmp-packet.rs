@@ -23,7 +23,7 @@ fn main() {
                     let icmpv4_packet = Icmpv4Packet::new_unchecked(ipv4_payload);
                     println!("{:?}", icmpv4_packet);
                 }
-                Err(err) => println!("{:?}", err)
+                Err(err) => println!("{:?}", err),
             }
         }
     }
