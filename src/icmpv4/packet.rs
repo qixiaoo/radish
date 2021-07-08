@@ -57,8 +57,8 @@ impl<Buf> Packet<Buf>
 where
     Buf: AsMut<[u8]>,
 {
-    pub fn set_type(&mut self, r#type: u8) {
-        self.buffer.as_mut()[0] = r#type;
+    pub fn set_type(&mut self, r#type: MessageType) {
+        self.buffer.as_mut()[0] = r#type.into();
     }
 
     pub fn set_code(&mut self, code: u8) {
@@ -161,11 +161,6 @@ where
 
 // TODO: support other ICMP message types
 
-pub mod echo_and_echo_reply_packet_code {
-    pub const ECHO_REPLY: u8 = 0;
-    pub const ECHO_REQUEST: u8 = 8;
-}
-
 pub struct EchoAndEchoReplyPacket<Buf> {
     packet: Packet<Buf>,
 }
@@ -190,11 +185,11 @@ where
     }
 
     pub fn is_reply(&self) -> bool {
-        self.packet.code() == echo_and_echo_reply_packet_code::ECHO_REPLY
+        self.r#type() == MessageType::EchoReply
     }
 
     pub fn is_request(&self) -> bool {
-        self.packet.code() == echo_and_echo_reply_packet_code::ECHO_REQUEST
+        self.r#type() == MessageType::Echo
     }
 
     pub fn identifier(&self) -> u16 {
