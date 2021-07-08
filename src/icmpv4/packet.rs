@@ -103,6 +103,18 @@ where
     }
 }
 
+c_like_enum!(
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+    pub enum DestinationUnreachablePacketCode(u8) {
+        NetUnreachable = 0,
+        HostUnreachable = 1,
+        ProtocolUnreachable = 2,
+        PortUnreachable = 3,
+        FragmentationNeededAndDfSet = 4,
+        SourceRouteFailed = 5,
+    }
+);
+
 pub struct DestinationUnreachablePacket<Buf> {
     packet: Packet<Buf>,
 }
@@ -124,6 +136,10 @@ where
             Ok(packet) => Ok(packet),
             Err(err) => Err(err.into()),
         }
+    }
+
+    pub fn code(&self) -> DestinationUnreachablePacketCode {
+        self.packet.buffer.as_ref()[1].into()
     }
 
     pub fn payload(&self) -> &[u8] {
