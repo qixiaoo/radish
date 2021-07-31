@@ -4,6 +4,12 @@ use radish::icmpv4::packet::Packet as Icmpv4Packet;
 use radish::ipv4::packet::Packet as Ipv4Packet;
 use radish::net_device::tun::TunDevice;
 
+/// usage:
+/// 1. follow `./examples/tun-device` to create tun interface "tun-radish"
+/// 2. build and run this example
+/// 3. run `ping 192.168.233.234` in a new terminal
+/// 4. the received icmp packet will be printed
+
 fn main() {
     let mtu = 1500;
     let name = String::from("tun-radish");

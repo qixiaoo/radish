@@ -3,6 +3,11 @@ use std::process::Command;
 
 use radish::net_device::tun::TunDevice;
 
+/// usage:
+/// 1. run `cargo build --example tun-device` to build
+/// 2. find executable file in `target/debug/examples`
+/// 3. run `sudo ./tun-device` to create a tun interface
+
 fn main() {
     let name = String::from("tun-radish");
     let device = TunDevice::new(&name).expect("create a new tun device");
