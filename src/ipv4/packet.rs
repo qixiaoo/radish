@@ -181,6 +181,16 @@ where
     }
 }
 
+impl<Buf> Packet<Buf>
+where
+    Buf: AsMut<[u8]> + AsRef<[u8]>,
+{
+    pub fn payload_mut(&mut self) -> &mut [u8] {
+        let header_bytes_len: usize = (self.header_len() * 4) as usize;
+        &mut self.buffer.as_mut()[header_bytes_len..]
+    }
+}
+
 impl<Buf> Debug for Packet<Buf>
 where
     Buf: AsRef<[u8]>,

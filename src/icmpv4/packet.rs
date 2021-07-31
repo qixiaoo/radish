@@ -1,6 +1,6 @@
 use std::convert::{TryFrom, TryInto};
 use std::fmt::{Debug, Formatter};
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 use crate::c_like_enum;
 use crate::error::Result;
@@ -158,6 +158,15 @@ where
     }
 }
 
+impl<Buf> DerefMut for DestinationUnreachablePacket<Buf>
+where
+    Buf: AsRef<[u8]> + AsMut<[u8]>,
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.packet
+    }
+}
+
 impl<Buf> TryFrom<Packet<Buf>> for DestinationUnreachablePacket<Buf>
 where
     Buf: AsRef<[u8]>,
@@ -242,6 +251,15 @@ where
 
     fn deref(&self) -> &Self::Target {
         &self.packet
+    }
+}
+
+impl<Buf> DerefMut for EchoAndEchoReplyPacket<Buf>
+where
+    Buf: AsRef<[u8]> + AsMut<[u8]>,
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.packet
     }
 }
 
