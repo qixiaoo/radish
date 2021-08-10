@@ -5,6 +5,7 @@ pub enum Error {
     InvalidVersion,
     InvalidHeaderLen,
     InvalidTotalLen,
+    InvalidOptionLen,
 }
 
 impl Display for Error {
@@ -13,6 +14,7 @@ impl Display for Error {
             Error::InvalidVersion => write!(f, "invalid version"),
             Error::InvalidHeaderLen => write!(f, "invalid header length"),
             Error::InvalidTotalLen => write!(f, "invalid total length"),
+            Error::InvalidOptionLen => write!(f, "invalid option length"),
         }
     }
 }
