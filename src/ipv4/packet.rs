@@ -134,6 +134,10 @@ impl<Buf> Packet<Buf>
 where
     Buf: AsMut<[u8]>,
 {
+    pub fn set_version(&mut self, version: u8) {
+        self.buffer.as_mut()[0] = (self.buffer.as_mut()[0] & 0x0f) | ((version << 4) & 0xf0);
+    }
+
     pub fn set_header_len(&mut self, header_len: u8) {
         self.buffer.as_mut()[0] = (self.buffer.as_mut()[0] & 0xf0) | (header_len & 0x0f);
     }
@@ -193,7 +197,12 @@ where
 {
     pub fn payload_mut(&mut self) -> &mut [u8] {
         let header_bytes_len: usize = (self.header_len() * 4) as usize;
-        &mut self.buffer.as_mut()[header_bytes_len..]
+        let total_bytes_len = self.total_len() as usize;
+        &mut self.buffer.as_mut()[header_bytes_len..total_bytes_len]
+    }
+
+    pub fn set_payload(&mut self, payload: Buf) {
+        self.payload_mut()[..payload.as_ref().len()].copy_from_slice(payload.as_ref());
     }
 }
 
