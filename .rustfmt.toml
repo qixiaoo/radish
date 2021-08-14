@@ -3,3 +3,7 @@ max_width = 120
 reorder_imports = true
 reorder_modules = true
 use_try_shorthand = true
+
+# unstable features
+reorder_impl_items = true
+group_imports = "StdExternalCrate"
