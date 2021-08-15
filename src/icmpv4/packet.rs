@@ -184,6 +184,83 @@ where
     }
 }
 
+c_like_enum!(
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+    pub enum TimeExceededPacketCode(u8) {
+        TtlExceededInTransit = 0,
+        FragmentReassemblyTimeExceeded = 1,
+    }
+);
+
+pub struct TimeExceededPacket<Buf> {
+    packet: Packet<Buf>,
+}
+
+impl<Buf> TimeExceededPacket<Buf>
+where
+    Buf: AsRef<[u8]>,
+{
+    pub fn new_unchecked(buffer: Buf) -> Self {
+        TimeExceededPacket {
+            packet: Packet { buffer },
+        }
+    }
+
+    pub fn new_checked(buffer: Buf) -> Result<Self> {
+        let unchecked = Self::new_unchecked(buffer);
+
+        match unchecked.packet.try_into() {
+            Ok(packet) => Ok(packet),
+            Err(err) => Err(err.into()),
+        }
+    }
+
+    pub fn code(&self) -> TimeExceededPacketCode {
+        self.packet.buffer.as_ref()[1].into()
+    }
+
+    pub fn payload(&self) -> &[u8] {
+        &self.packet.buffer.as_ref()[8..]
+    }
+}
+
+impl<Buf> Deref for TimeExceededPacket<Buf>
+where
+    Buf: AsRef<[u8]>,
+{
+    type Target = Packet<Buf>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.packet
+    }
+}
+
+impl<Buf> DerefMut for TimeExceededPacket<Buf>
+where
+    Buf: AsRef<[u8]> + AsMut<[u8]>,
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.packet
+    }
+}
+
+impl<Buf> TryFrom<Packet<Buf>> for TimeExceededPacket<Buf>
+where
+    Buf: AsRef<[u8]>,
+{
+    type Error = Error;
+
+    fn try_from(value: Packet<Buf>) -> std::result::Result<Self, Self::Error> {
+        let packet = Self::new_unchecked(value.buffer);
+
+        if packet.r#type() != MessageType::TimeExceeded {
+            return Err(Error::InvalidMessageType);
+        }
+
+        Ok(packet)
+    }
+}
+
 // TODO: support other ICMP message types
 
 pub struct EchoAndEchoReplyPacket<Buf> {
