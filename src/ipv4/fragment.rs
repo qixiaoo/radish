@@ -78,10 +78,11 @@ impl<'buf> Iterator for FragmentIterator<'buf> {
 
 #[cfg(test)]
 mod tests {
+    use std::net::Ipv4Addr;
+
     use crate::ipv4::builder::PacketBuilder;
     use crate::ipv4::packet::consts::MIN_HEADER_LEN;
     use crate::ipv4::packet::Protocol;
-    use std::net::Ipv4Addr;
 
     #[test]
     fn fragment() {
