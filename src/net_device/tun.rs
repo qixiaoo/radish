@@ -5,8 +5,8 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::os::unix::io::RawFd;
 
 use libc::{
-    c_short, close, in_addr, ioctl, open, read, sockaddr_in, socket, write, AF_INET, IFF_NO_PI, IFF_TUN, O_RDWR,
-    SIOCSIFADDR, SIOCSIFFLAGS, SIOCSIFNETMASK, SOCK_DGRAM,
+    c_int, c_short, close, in_addr, ioctl, open, read, sockaddr_in, socket, write, AF_INET, IFF_NO_PI, IFF_TUN, O_RDWR,
+    SIOCSIFADDR, SIOCSIFFLAGS, SIOCSIFMTU, SIOCSIFNETMASK, SOCK_DGRAM,
 };
 use log::error;
 
@@ -161,6 +161,19 @@ impl TunDevice {
     /// Set ipv6 netmask
     fn ipv6_netmask(&self, _ipv6_addr: Ipv6Addr) -> Result<&Self> {
         todo!()
+    }
+
+    pub fn mtu(&self, mtu: c_int) -> Result<&Self> {
+        let mut request = InterfaceRequest::new(&self.name)?;
+        request.union.mtu = mtu;
+
+        let result = unsafe { ioctl(self.socket_fd, SIOCSIFMTU, &request) };
+        if result < 0 {
+            error!("Failed to set MTU: {}.", mtu);
+            return Err(std::io::Error::last_os_error().into());
+        }
+
+        Ok(self)
     }
 }
 
