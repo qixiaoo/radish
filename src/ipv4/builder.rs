@@ -85,7 +85,7 @@ impl PacketBuilder {
         self
     }
 
-    pub fn build(mut self) -> Packet<Vec<u8>> {
+    pub fn build_vec(mut self) -> Vec<u8> {
         if self.total_len == 0 {
             self.total_len = ((self.header_len * 4) as usize + self.payload.len()) as u16;
         }
@@ -93,7 +93,7 @@ impl PacketBuilder {
         let mut buffer: Vec<u8> = vec![0; (self.header_len * 4) as usize];
         buffer.append(&mut self.payload);
 
-        let mut packet = Packet::new_unchecked(buffer);
+        let mut packet = Packet::new_unchecked(buffer.as_mut_slice());
         packet.set_version(self.version);
         packet.set_header_len(self.header_len);
         packet.set_tos(self.tos);
@@ -111,7 +111,11 @@ impl PacketBuilder {
             packet.set_checksum(checksum(packet.as_ref()));
         }
 
-        packet
+        buffer
+    }
+
+    pub fn build(self) -> Packet<Vec<u8>> {
+        Packet::new_unchecked(self.build_vec())
     }
 }
 

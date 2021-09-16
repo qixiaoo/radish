@@ -6,6 +6,7 @@ pub enum Error {
     InvalidHeaderLen,
     InvalidTotalLen,
     InvalidOptionLen,
+    NonFragmentablePacket,
 }
 
 impl Display for Error {
@@ -15,6 +16,7 @@ impl Display for Error {
             Error::InvalidHeaderLen => write!(f, "invalid header length"),
             Error::InvalidTotalLen => write!(f, "invalid total length"),
             Error::InvalidOptionLen => write!(f, "invalid option length"),
+            Error::NonFragmentablePacket => write!(f, "non-fragmentable packet"),
         }
     }
 }
