@@ -85,6 +85,14 @@ where
         self.buffer.as_ref()[6] >> 5
     }
 
+    pub fn dont_fragment(&self) -> bool {
+        ((self.flags() & 0b010) >> 1) == 1
+    }
+
+    pub fn more_fragments(&self) -> bool {
+        self.flags() & 0b001 == 1
+    }
+
     pub fn offset(&self) -> u16 {
         u16::from_be_bytes([self.buffer.as_ref()[6], self.buffer.as_ref()[7]]) & 0x1fff
     }
@@ -160,6 +168,16 @@ where
 
     pub fn set_flags(&mut self, flags: u8) {
         self.buffer.as_mut()[6] = (self.buffer.as_mut()[6] & 0x1f) | (flags << 5);
+    }
+
+    pub fn set_dont_fragment(&mut self, dont_fragment: bool) {
+        let bit: u8 = if dont_fragment { 1 } else { 0 };
+        self.buffer.as_mut()[6] = (self.buffer.as_mut()[6] & 0xbf) | (bit << 6);
+    }
+
+    pub fn set_more_fragments(&mut self, more_fragments: bool) {
+        let bit: u8 = if more_fragments { 1 } else { 0 };
+        self.buffer.as_mut()[6] = (self.buffer.as_mut()[6] & 0xdf) | (bit << 5);
     }
 
     pub fn set_offset(&mut self, offset: u16) {
@@ -458,6 +476,8 @@ mod tests {
         assert_eq!(packet.total_len(), 120);
         assert_eq!(packet.identification(), 0x102c);
         assert_eq!(packet.flags(), 0b000);
+        assert_eq!(packet.dont_fragment(), false);
+        assert_eq!(packet.more_fragments(), false);
         assert_eq!(packet.offset(), 0);
         assert_eq!(packet.ttl(), 64);
         assert_eq!(packet.protocol(), super::Protocol::Icmp);
@@ -480,5 +500,61 @@ mod tests {
         assert_eq!(timestamp_option.r#type().number(), 0b00000100);
         assert_eq!(timestamp_option.length(), Some(36));
         assert_eq!(option_iterator.next().is_none(), true);
+    }
+
+    #[test]
+    fn setter() {
+        let header_len = super::consts::MIN_HEADER_LEN as usize;
+        let payload_len = 8 as usize;
+        let total_len = header_len * 4 + payload_len;
+
+        let buffer: Vec<u8> = vec![0; total_len];
+        let mut packet = super::Packet::new_unchecked(buffer);
+
+        packet.set_version(4);
+        assert_eq!(packet.version(), 4);
+
+        packet.set_header_len(header_len as u8);
+        assert_eq!(packet.header_len(), header_len as u8);
+
+        packet.set_tos(0b11111100);
+        assert_eq!(packet.tos(), 0b11111100);
+
+        packet.set_total_len(total_len as u16);
+        assert_eq!(packet.total_len(), total_len as u16);
+
+        packet.set_identification(0x102c);
+        assert_eq!(packet.identification(), 0x102c);
+
+        packet.set_flags(0b000);
+        assert_eq!(packet.flags(), 0b000);
+
+        packet.set_dont_fragment(true);
+        assert_eq!(packet.dont_fragment(), true);
+
+        packet.set_more_fragments(true);
+        assert_eq!(packet.more_fragments(), true);
+        assert_eq!(packet.flags(), 0b011);
+
+        packet.set_offset(40);
+        assert_eq!(packet.offset(), 40);
+
+        packet.set_ttl(64);
+        assert_eq!(packet.ttl(), 64);
+
+        packet.set_protocol(super::Protocol::Tcp);
+        assert_eq!(packet.protocol(), super::Protocol::Tcp);
+
+        packet.set_checksum(0xddaa);
+        assert_eq!(packet.checksum(), 0xddaa);
+
+        packet.set_src_addr(Ipv4Addr::new(127, 0, 0, 1));
+        assert_eq!(packet.src_addr(), Ipv4Addr::new(127, 0, 0, 1));
+
+        packet.set_dest_addr(Ipv4Addr::new(127, 0, 0, 1));
+        assert_eq!(packet.dest_addr(), Ipv4Addr::new(127, 0, 0, 1));
+
+        packet.set_payload(vec![1, 2, 3, 4, 5, 6, 7, 8]);
+        assert_eq!(packet.payload(), vec![1, 2, 3, 4, 5, 6, 7, 8].as_slice());
     }
 }
