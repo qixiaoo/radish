@@ -1,5 +1,5 @@
 pub mod builder;
 pub mod error;
-pub mod fragment;
+pub mod fragmentation;
 pub mod interface;
 pub mod packet;
