@@ -59,7 +59,7 @@ impl<'buf> Iterator for FragmentIterator<'buf> {
         let fragment_vec = PacketBuilder::default()
             .header_len(MIN_HEADER_LEN)
             .tos(origin_packet.tos())
-            .total_len((MIN_HEADER_LEN as usize + payload_len) as u16)
+            .total_len(((MIN_HEADER_LEN * 4) as usize + payload_len) as u16)
             .identification(origin_packet.identification())
             .flags(flags)
             .offset(fragment_offset as u16)
@@ -115,14 +115,17 @@ mod tests {
         assert_eq!(iterator.mtu, min_mtu);
         assert_eq!(iterator.cursor, (payload_len + header_len * 4) as usize);
 
+        assert_eq!(first_fragment.total_len(), min_mtu as u16);
         assert_eq!(first_fragment.flags(), 0b001);
         assert_eq!(first_fragment.offset(), 0);
         assert_eq!(first_fragment.payload(), (0..48).collect::<Vec<u8>>().as_slice());
 
+        assert_eq!(second_fragment.total_len(), min_mtu as u16);
         assert_eq!(second_fragment.flags(), 0b001);
         assert_eq!(second_fragment.offset(), 6);
         assert_eq!(second_fragment.payload(), (48..96).collect::<Vec<u8>>().as_slice());
 
+        assert_eq!(third_fragment.total_len(), 24);
         assert_eq!(third_fragment.flags(), 0b000);
         assert_eq!(third_fragment.offset(), 12);
         assert_eq!(third_fragment.payload(), (96..100).collect::<Vec<u8>>().as_slice());
