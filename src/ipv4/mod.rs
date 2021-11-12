@@ -3,3 +3,4 @@ pub mod error;
 pub mod fragmentation;
 pub mod interface;
 pub mod packet;
+pub mod reassembly;
